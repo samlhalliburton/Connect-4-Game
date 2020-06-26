@@ -1,12 +1,6 @@
 package ui;
 
-/**
- * This program creates the GUI for the Connect4 game.
- *
- * @author Samantha Halliburton
- * @version 6.14.2020
- */
-
+import core.Connect4;
 import core.Connect4ComputerPlayer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -23,23 +17,36 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class Connect4GUI extends Application  {
-    int board[][];
-    int player = 1;
+/**
+ * This program creates the GUI for a Connect4 game.
+ *
+ * @author Samantha Halliburton
+ * @version 6.23.2020
+ */
+public class Connect4GUI extends Application {
+    char[][] board;
+    char player = 'X';
 
-    Connect4ComputerPlayer game = new Connect4ComputerPlayer();
+    Connect4 game = new Connect4();
+    Connect4ComputerPlayer comp = new Connect4ComputerPlayer();
 
     boolean gameAgainstComputer = false;
 
-    @Override // Override the start method in the Application class
+    /**
+     * Main starting point for GUI
+     * Creates stages for display
+     * @param primaryStage
+     */
+    @Override
     public void start(Stage primaryStage) {
+        board = game.createBoard();
         board = game.getBoard();
 
         GridPane gridPane = new GridPane();
         gridPane.setHgap(5);
         gridPane.setVgap(5);
         gridPane.setAlignment(Pos.CENTER);
-        gridPane.setStyle("-fx-background-color: yellow;");
+        gridPane.setStyle("-fx-background-color: yellow");
 
         Color black = Color.BLACK;
         Color red = Color.RED;
@@ -117,39 +124,39 @@ public class Connect4GUI extends Application  {
         gridPane.add(btCol7, 6, 0);
         btCol7.setOnAction(handler7);
 
-        for(int i = 0; i < 6  ; i++) {
-            for(int j = 0 ; j < board[i].length ; j++) {
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < board[i].length; j++) {
                 Circle circleMain = new Circle();
                 circleMain.setCenterX(50);
                 circleMain.setCenterY(50);
                 circleMain.setRadius(25);
 
-                if(board[i][j] == 0) {
+                if (board[i][j] == ' ') {
                     circleMain.setFill(empty);
-                } else if (board[i][j] == 1) {
+                } else if (board[i][j] == 'X') {
                     circleMain.setFill(black);
-                } else if (board[i][j] == 2) {
+                } else if (board[i][j] == 'O') {
                     circleMain.setFill(red);
                 }
 
-                gridPane.add(circleMain, j, (i+1));
+                gridPane.add(circleMain, j, (i + 1));
             }
         }
 
         // Re-create game board
         EventHandler<ActionEvent> eventHandler = e -> {
-            for (int i = 0 ; i < 6 ; i++) {
+            for (int i = 0; i < 6; i++) {
                 for (int j = 0; j < board[i].length; j++) {
                     Circle circleMain = new Circle();
                     circleMain.setCenterX(50);
                     circleMain.setCenterY(50);
                     circleMain.setRadius(25);
 
-                    if (board[i][j] == 0) {
+                    if (board[i][j] == ' ') {
                         circleMain.setFill(empty);
-                    } else if (board[i][j] == 1) {
+                    } else if (board[i][j] == 'X') {
                         circleMain.setFill(black);
-                    } else if (board[i][j] == 2) {
+                    } else if (board[i][j] == 'O') {
                         circleMain.setFill(red);
                     }
 
@@ -189,9 +196,9 @@ public class Connect4GUI extends Application  {
     }
 
     /**
-     *
+     * Creates option to play against computer
      */
-    class PlayComputer implements EventHandler<ActionEvent>{
+    class PlayComputer implements EventHandler<ActionEvent> {
         public void handle(ActionEvent e) {
             gameAgainstComputer = true;
         }
@@ -204,36 +211,54 @@ public class Connect4GUI extends Application  {
     class MultiPlayer_Col1 implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent e) {
-            game.moveGamePiece(1, player);
-
-            if(game.checkForWinner(player)) {
-                Stage stage = new Stage();
-                stage.setTitle("Game Over!");
-                stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
-                stage.show();
-            }
-
             if(gameAgainstComputer) {
-                player = 2;
-                game.moveComputerGamePiece();
+                game.tryMove(0, player);
 
-                if(game.checkForWinner(player)) {
+                if(game.checkForWinner()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else {
+                    player = game.switchPlayer(player);
+                    game.tryMove(comp.getComputerMove(), player);
+
+                    if(game.checkForDraw()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                        stage.show();
+                    } else if(game.checkForWinner()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                        stage.show();
+                    }
+                }
+
+            } else {
+                game.tryMove(0, player);
+
+                if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForWinner()) {
                     Stage stage = new Stage();
                     stage.setTitle("Game Over!");
                     stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
                     stage.show();
                 }
-
             }
 
             board = game.getBoard();
-
-            if(player == 1) {
-                player = 2;
-            } else if(player == 2) {
-                player = 1;
-            }
-
+            player = game.switchPlayer(player);
         }
     }
 
@@ -243,37 +268,55 @@ public class Connect4GUI extends Application  {
     class MultiPlayer_Col2 implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent e) {
-            game.moveGamePiece(2, player);
-
-            if(game.checkForWinner(player)) {
-                Stage stage = new Stage();
-                stage.setTitle("Game Over!");
-                stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
-                stage.show();
-            }
-
             if(gameAgainstComputer) {
-                player = 2;
-                game.moveComputerGamePiece();
+                game.tryMove(1, player);
 
-                if(game.checkForWinner(player)) {
+                if(game.checkForWinner()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else {
+                    player = game.switchPlayer(player);
+                    game.tryMove(comp.getComputerMove(), player);
+
+                    if(game.checkForDraw()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                        stage.show();
+                    } else if(game.checkForWinner()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                        stage.show();
+                    }
+                }
+
+            } else {
+                game.tryMove(1, player);
+
+                if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForWinner()) {
                     Stage stage = new Stage();
                     stage.setTitle("Game Over!");
                     stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
                     stage.show();
                 }
-
             }
 
             board = game.getBoard();
-            if(player == 1) {
-                player = 2;
-            } else if(player == 2) {
-                player = 1;
-            }
-
+            player = game.switchPlayer(player);
         }
-
     }
 
     /**
@@ -282,37 +325,55 @@ public class Connect4GUI extends Application  {
     class MultiPlayer_Col3 implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent e) {
-            game.moveGamePiece(3, player);
-            game.checkForWinner(player);
-
-            if(game.checkForWinner(player)) {
-                Stage stage = new Stage();
-                stage.setTitle("Game Over!");
-                stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
-                stage.show();
-            }
-
             if(gameAgainstComputer) {
-                player = 2;
-                game.moveComputerGamePiece();
+                game.tryMove(2, player);
 
-                if(game.checkForWinner(player)) {
+                if(game.checkForWinner()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else {
+                    player = game.switchPlayer(player);
+                    game.tryMove(comp.getComputerMove(), player);
+
+                    if(game.checkForDraw()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                        stage.show();
+                    } else if(game.checkForWinner()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                        stage.show();
+                    }
+                }
+
+            } else {
+                game.tryMove(2, player);
+
+                if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForWinner()) {
                     Stage stage = new Stage();
                     stage.setTitle("Game Over!");
                     stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
                     stage.show();
                 }
-
             }
 
-            if(player == 1) {
-                player = 2;
-            } else if(player == 2) {
-                player = 1;
-            }
-
+            board = game.getBoard();
+            player = game.switchPlayer(player);
         }
-
     }
 
     /**
@@ -321,37 +382,55 @@ public class Connect4GUI extends Application  {
     class MultiPlayer_Col4 implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent e) {
-            game.moveGamePiece(4, player);
-            game.checkForWinner(player);
-
-            if(game.checkForWinner(player)) {
-                Stage stage = new Stage();
-                stage.setTitle("Game Over!");
-                stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
-                stage.show();
-            }
-
             if(gameAgainstComputer) {
-                player = 2;
-                game.moveComputerGamePiece();
+                game.tryMove(3, player);
 
-                if(game.checkForWinner(player)) {
+                if(game.checkForWinner()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else {
+                    player = game.switchPlayer(player);
+                    game.tryMove(comp.getComputerMove(), player);
+
+                    if(game.checkForDraw()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                        stage.show();
+                    } else if(game.checkForWinner()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                        stage.show();
+                    }
+                }
+
+            } else {
+                game.tryMove(3, player);
+
+                if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForWinner()) {
                     Stage stage = new Stage();
                     stage.setTitle("Game Over!");
                     stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
                     stage.show();
                 }
-
             }
 
-            if(player == 1) {
-                player = 2;
-            } else if(player == 2) {
-                player = 1;
-            }
-
+            board = game.getBoard();
+            player = game.switchPlayer(player);
         }
-
     }
 
     /**
@@ -360,37 +439,55 @@ public class Connect4GUI extends Application  {
     class MultiPlayer_Col5 implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent e) {
-            game.moveGamePiece(5, player);
-            game.checkForWinner(player);
-
-            if(game.checkForWinner(player)) {
-                Stage stage = new Stage();
-                stage.setTitle("Game Over!");
-                stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
-                stage.show();
-            }
-
             if(gameAgainstComputer) {
-                player = 2;
-                game.moveComputerGamePiece();
+                game.tryMove(4, player);
 
-                if(game.checkForWinner(player)) {
+                if(game.checkForWinner()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else {
+                    player = game.switchPlayer(player);
+                    game.tryMove(comp.getComputerMove(), player);
+
+                    if(game.checkForDraw()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                        stage.show();
+                    } else if(game.checkForWinner()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                        stage.show();
+                    }
+                }
+
+            } else {
+                game.tryMove(4, player);
+
+                if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForWinner()) {
                     Stage stage = new Stage();
                     stage.setTitle("Game Over!");
                     stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
                     stage.show();
                 }
-
             }
 
-            if(player == 1) {
-                player = 2;
-            } else if(player == 2) {
-                player = 1;
-            }
-
+            board = game.getBoard();
+            player = game.switchPlayer(player);
         }
-
     }
 
     /**
@@ -399,37 +496,55 @@ public class Connect4GUI extends Application  {
     class MultiPlayer_Col6 implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent e) {
-            game.moveGamePiece(6, player);
-            game.checkForWinner(player);
-
-            if(game.checkForWinner(player)) {
-                Stage stage = new Stage();
-                stage.setTitle("Game Over!");
-                stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
-                stage.show();
-            }
-
             if(gameAgainstComputer) {
-                player = 2;
-                game.moveComputerGamePiece();
+                game.tryMove(5, player);
 
-                if(game.checkForWinner(player)) {
+                if(game.checkForWinner()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else {
+                    player = game.switchPlayer(player);
+                    game.tryMove(comp.getComputerMove(), player);
+
+                    if(game.checkForDraw()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                        stage.show();
+                    } else if(game.checkForWinner()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                        stage.show();
+                    }
+                }
+
+            } else {
+                game.tryMove(5, player);
+
+                if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForWinner()) {
                     Stage stage = new Stage();
                     stage.setTitle("Game Over!");
                     stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
                     stage.show();
                 }
-
             }
 
-            if(player == 1) {
-                player = 2;
-            } else if(player == 2) {
-                player = 1;
-            }
-
+            board = game.getBoard();
+            player = game.switchPlayer(player);
         }
-
     }
 
     /**
@@ -438,40 +553,60 @@ public class Connect4GUI extends Application  {
     class MultiPlayer_Col7 implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent e) {
-            game.moveGamePiece(7, player);
-            game.checkForWinner(player);
-
-            if(game.checkForWinner(player)) {
-                Stage stage = new Stage();
-                stage.setTitle("Game Over!");
-                stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
-                stage.show();
-            }
-
             if(gameAgainstComputer) {
-                player = 2;
-                game.moveComputerGamePiece();
+                game.tryMove(6, player);
 
-                if(game.checkForWinner(player)) {
+                if(game.checkForWinner()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else {
+                    player = game.switchPlayer(player);
+                    game.tryMove(comp.getComputerMove(), player);
+
+                    if(game.checkForDraw()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                        stage.show();
+                    } else if(game.checkForWinner()) {
+                        Stage stage = new Stage();
+                        stage.setTitle("Game Over!");
+                        stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
+                        stage.show();
+                    }
+                }
+
+            } else {
+                game.tryMove(6, player);
+
+                if(game.checkForDraw()) {
+                    Stage stage = new Stage();
+                    stage.setTitle("Game Over!");
+                    stage.setScene(new Scene(new Button("It's a tie!"), 100, 100));
+                    stage.show();
+                } else if(game.checkForWinner()) {
                     Stage stage = new Stage();
                     stage.setTitle("Game Over!");
                     stage.setScene(new Scene(new Button("Player " + player + " wins!"), 100, 100));
                     stage.show();
                 }
-
             }
 
-            if(player == 1) {
-                player = 2;
-            } else if(player == 2) {
-                player = 1;
-            }
+            board = game.getBoard();
+            player = game.switchPlayer(player);
         }
-
     }
 
     /**
-     * Main method
+     * launches GUI application
+     * @param args
      */
     public static void main(String[] args) {
         launch(args);

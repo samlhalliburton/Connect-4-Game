@@ -12,6 +12,10 @@ import java.util.Scanner;
 
 public class LaunchConnect4 {
 
+    /**
+     * Main method
+     * @param args
+     */
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 

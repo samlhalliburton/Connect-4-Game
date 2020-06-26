@@ -1,176 +1,105 @@
 package ui;
 
+import core.Connect4;
 import core.Connect4ComputerPlayer;
-
+import core.Constants;
 import java.util.Scanner;
 
 /**
- * This program creates the ui for the Connect4 game logic
- * to be implemented on.
+ * This program creates the console-based ui for a Connect4 game.
  *
  * @author Samantha Halliburton
- * @version 6.14.2020
+ * @version 6.23.2020
  */
 
-
-public class Connect4TextConsole {
+public class Connect4TextConsole extends Constants {
 
     /**
      * This creates the runGame method to be used in the LaunchConnect4 class
      * Imports game logic methods and creates console-based game
      */
     public static void runGame() {
-        Scanner scan = new Scanner(System.in);
-        int player_ID = 1;
-        int col = 0;
-        String mode = "";
+        Scanner scanner = new Scanner(System.in);
+        Connect4 game = new Connect4();
+        Connect4ComputerPlayer comp = new Connect4ComputerPlayer();
+        int port = 8000;
 
-        Connect4ComputerPlayer game = new Connect4ComputerPlayer();
-        game.printGame();
-        System.out.println("Begin Game. Enter 'P' if you want to play against" +
-                " another player; enter 'C' to play against computer.");
+        char player = PLAYER1;
+        int choice = 0;
 
-        try {
-            mode = scan.next();
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid entry.");
-        }
-
-        if (mode.equals("P") || mode.equals("p")) {
-            System.out.println("Start two player game.");
-            while (true) {
-                if (game.fullBoard() == true) {
-                    System.out.println("Game over. It's a draw.");
-                    break;
-                } else {
-                    if (player_ID == 1) {
-                        System.out.println("PlayerX - your turn. Choose a column number from 1-7.");
-
-                        try {
-                            col = scan.nextInt();
-                        } catch (Exception e) {
-                            System.out.println("Must be a number from 1 to 7.");
-                            break;
-                        }
-
-                        if ((col > 0) && (col < 8)) {
-                            if (game.fullColumn(col)) {
-                                game.moveGamePiece(col, player_ID);
-                                game.printGame();
-
-                                if (game.checkForWinner(player_ID) == true) {
-                                    System.out.println("Player X Wins!");
-                                    break;
-                                }
-
-                                player_ID = 2;
-                            }
-
-                        } else {
-                            System.out.println("Invalid column choice. Please try again.");
-                        }
-
-                        if ((col > 0) && (col < 8) && !game.fullColumn(col)) {
-                            System.out.println("The column is full. Please try another column.");
-                        }
-
-                    }
-
-                    if (player_ID == 2) {
-                        System.out.println("PlayerO - your turn. Choose a column number from 1-7.");
-
-                        try {
-                            col = scan.nextInt();
-                        } catch (Exception e) {
-                            System.out.println("Must be a number from 1 to 7.");
-                            break;
-                        }
-
-                        if ((col > 0) && (col < 8)) {
-                            if (game.fullColumn(col)) {
-                                game.moveGamePiece(col, player_ID);
-                                game.printGame();
-
-                                if (game.checkForWinner(player_ID) == true) {
-                                    System.out.println("Player O Wins!");
-                                    break;
-                                }
-
-                                player_ID = 1;
-                            }
-
-                        } else {
-                            System.out.println("Invalid column choice. Please try again.");
-                        }
-
-                        if ((col > 0) && (col < 8) && game.fullColumn(col)) {
-                            System.out.println("The column is full. Please try another column.");
-                        }
-
-                    }
-
-                }
-
+        game.createBoard();
+        game.displayBoard();
+        System.out.println();
+        System.out.println(BEGIN_GAME);
+        System.out.println(GAME_MODE);
+        char mode = 'a';
+        while(!(mode == PLAYER || mode == PLAYER_VAR || mode == COMPUTER || mode == COMPUTER_VAR)) {
+            mode = game.getMode(scanner);
+            if(!(mode == PLAYER || mode == PLAYER_VAR || mode == COMPUTER || mode == COMPUTER_VAR)) {
+                game.wrongMode();
             }
         }
+        game.startGame(mode);
 
-        if (mode.equals("C") || mode.equals("c")) {
-            System.out.println("Start game against computer.");
-            while (true) {
-                if (game.fullBoard() == true) {
-                    System.out.println("Game over. It's a draw.");
+        if(mode == PLAYER || mode == PLAYER_VAR) {
+            while(true) {
+                game.playerTurnPrompt(player);
+                choice = game.getMove();
+
+                if(game.checkForDraw() == true) {
+                    game.tryMove(choice, player);
+                    game.displayBoard();
+                    System.out.println();
+                    System.out.println(TIED_GAME);
                     break;
                 } else {
-                    if (player_ID == 1) {
-                        System.out.println("PlayerX - your turn. Choose a column number from 1-7.");
-
-                        try {
-                            col = scan.nextInt();
-                        } catch (Exception e) {
-                            System.out.println("Must be a number from 1 to 7.");
-                            break;
+                    if(game.tryMove(choice, player)) {
+                        if(game.checkForWinner()) {
+                            game.displayBoard();
+                            System.out.println();
+                            System.out.println("Player " + player + " wins!");
+                            return;
                         }
-
-                        if ((col > 0) && (col < 8)) {
-                            if (game.fullColumn(col)) {
-                                game.moveGamePiece(col, player_ID);
-                                game.printGame();
-
-                                if (game.checkForWinner(player_ID) == true) {
-                                    System.out.println("Player X Wins!");
-                                    break;
-                                }
-
-                                player_ID = 2;
-                            }
-
-                        } else {
-                            System.out.println("Invalid column choice. Please try again.");
-                        }
-
-                        if ((col > 0) && (col < 8) && !game.fullColumn(col)) {
-                            System.out.println("The column is full. Please try another column.");
-                        }
-
+                        player = game.switchPlayer(player);
                     }
+                    game.displayBoard();
+                    System.out.println();
+                }
+            }
+        } else if(mode == COMPUTER || mode == COMPUTER_VAR) {
+            while(true) {
+                game.computerTurnPrompt(player);
 
-                    if (player_ID == 2) {
-                        System.out.println("Computer's turn to move");
-                        game.moveComputerGamePiece();
-                    }
-
-                    if (game.checkForWinner(player_ID) == true) {
-                        System.out.println("Computer Wins!");
-                        break;
-                    }
-
-                    player_ID = 1;
+                if(player == PLAYER1) {
+                    choice = game.getMove();
+                } else if(player == PLAYER2) {
+                    choice = comp.getComputerMove();
                 }
 
+                if(game.checkForDraw() == true) {
+                    game.tryMove(choice, player);
+                    game.displayBoard();
+                    System.out.println();
+                    System.out.println(TIED_GAME);
+                    break;
+                } else {
+                    if(game.tryMove(choice, player)) {
+                        if(game.checkForWinner()) {
+                            game.displayBoard();
+                            System.out.println();
+                            if(player == PLAYER1) {
+                                System.out.println(YOUR_WIN);
+                            } else if(player == PLAYER2) {
+                                System.out.println(COMPUTER_WIN);
+                            }
+                            return;
+                        }
+                        player = game.switchPlayer(player);
+                    }
+                    game.displayBoard();
+                    System.out.println();
+                }
             }
-
         }
-
     }
-
 }

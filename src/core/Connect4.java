@@ -1,168 +1,274 @@
 package core;
 
+import java.util.Scanner;
+
 /**
  * This program creates the game logic for a Connect4 game.
  *
  * @author Samantha Halliburton
- * @version 5.31.2020
+ * @version 6.23.2020
  */
 
-public class Connect4 {
-    int numMoves = 0;
-    int[][] board;
+public class Connect4 extends Constants {
+    private static char[][] board;
+    public static char mode;
+    private char player;
+    private int numMoves;
+    Scanner scanner = new Scanner(System.in);
 
     /**
-     * Constructor method creates new game board
+     * Constructor method for Connect4
      */
     public Connect4() {
-        board = new int[6][7];
+        this.board = new char[6][7];
+        this.player = PLAYER1;
+        this.numMoves = 0;
     }
 
     /**
-     * Getter method returns board
+     * Getter method for board
+     *
      * @return
      */
-    public int[][] getBoard() {
+    public char[][] getBoard() {
         return board;
     }
 
     /**
-     * Setter method for board
-     * @param board
+     * createBoard() method
+     * Creates initial game board by filling char array with blanks
+     *
+     * @return blank game board
      */
-    public void setBoard(int[][] board) {
-        this.board = board;
+    public char[][] createBoard() {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                board[i][j] = BLANK;
+            }
+        }
+        numMoves = 0;
+        return board;
     }
 
     /**
-     * Prints out formatted board per specifications
+     * This method prints out formatted board per specifications
      */
-    public void printGame() {
-        for (int i = 0; i < 6; i++) {
+    public void displayBoard() {
+        System.out.println();
+        for (int i = 0; i < board.length; i++) {
             System.out.print("|");
-
-            for (int j = 0; j < 7; j++) {
-                if (board[i][j] == 0) {
-                    System.out.print(" ");
-                } else if (board[i][j] == 1) {
-                    System.out.print("X");
-                } else if (board[i][j] == 2) {
-                    System.out.print("O");
-                }
-
-                System.out.print("|");
+            for (int j = 0; j < board[i].length; j++) {
+                System.out.print(board[i][j] + "|");
             }
-
             System.out.println();
         }
-
-        System.out.println();
-        System.out.println();
     }
 
     /**
-     * Inserts player_ID into selected column
+     * This method takes in game mode selected
+     * whether two player or against computer
      *
-     * @param col    Column choice entered by player
-     * @param player Inserts player_ID number associated with player
+     * @param scanner
+     * @return
      */
-    public void moveGamePiece(int col, int player) {
-        // Converts player choice into proper array column
-        col--;
-        for (int i = 5; i >= 0; i--) {
-            if (board[i][col] == 0) {
-                board[i][col] = player;
-                break;
-            }
+    public char getMode(Scanner scanner) {
+        char mode = scanner.next().charAt(0);
+        if (mode == 0) {
+            return 0;
         }
 
-        // Records number of moves completed (42 total allowed)
-        numMoves++;
+        return mode;
     }
 
     /**
-     * Checks for a winner by searching for 4-in-a-row
-     * in vertical, horizontal, and both diagonals.
+     * Prints starting game messages dependent upon game mode
      *
-     * @param player Inserts player_ID number associated with player
-     * @return Returns true if there is a 4-in-a-row match
+     * @param choice Takes in user's choice of two player or computer
+     * @throws IllegalArgumentException if invalid entry
      */
-    public boolean checkForWinner(int player) {
-        // Check for vertical 4-in-a-row
-        for (int j = 0; j < 7; j++) {
-            for (int i = 0; i < 3; i++) {
-                if ((board[i][j] == player) && (board[i + 1][j] == player)
-                        && (board[i + 2][j] == player) && (board[i + 3][j] == player)) {
-                    return true;
-                }
-            }
+    public void startGame(char choice) throws IllegalArgumentException {
+        if (choice == COMPUTER || choice == COMPUTER_VAR) {
+            System.out.println(START_GAME_COMPUTER);
+        } else if (choice == PLAYER || choice == PLAYER_VAR) {
+            System.out.println(START_GAME_TWO_PLAYER);
+        } else {
+            throw new IllegalArgumentException("Invalid Entry!");
         }
+    }
 
-        // Check for horizontal 4-in-a-row
-        for (int j = 0; j < 4; j++) {
-            for (int i = 0; i < 6; i++) {
-                if ((board[i][j] == player) && (board[i][j + 1] == player)
-                        && (board[i][j + 2] == player) && (board[i][j + 3] == player)) {
-                    return true;
-                }
-            }
+    /**
+     * This function displays a message indicating whose turn it is.
+     *
+     * @param player Player X or Player O
+     * @return Message stating turn to move
+     */
+    public void playerTurnPrompt(char player) {
+        if(player == PLAYER1) {
+            System.out.println(PLAYER1_MOVE);
+        } else {
+            System.out.println(PLAYER2_MOVE);
         }
+    }
 
-        // Check for diagonal 4-in-a-row (negative slope)
-        for (int j = 0; j < 4; j++) {
-            for (int i = 3; i < 6; i++) {
-                if ((board[i][j] == player) && (board[i - 1][j + 1] == player)
-                        && (board[i - 2][j + 2] == player) && (board[i - 3][j + 3] == player)) {
-                    return true;
-                }
-            }
+    /**
+     * Prints out statement on who's turn to move
+     * when playing against computer
+     *
+     * @param player Player who's turn it currently is
+     */
+    public void computerTurnPrompt(char player) {
+        if(player == PLAYER1) {
+            System.out.println(YOUR_MOVE);
+        } else {
+            System.out.println(COMPUTER_MOVE);
         }
+    }
 
-        // Check for diagonal 4-in-a-row (positive slope)
-        for (int j = 0; j < 4; j++) {
-            for (int i = 0; i < 3; i++) {
-                if ((board[i][j] == player) && (board[i + 1][j + 1] == player)
-                        && (board[i + 2][j + 2] == player) && (board[i + 3][j + 3] == player)) {
-                    return true;
-                }
-            }
+    /**
+     * Switches player based on current player's turn
+     *
+     * @param player
+     * @return New player to move
+     */
+    public char switchPlayer(char player) {
+        if (player == PLAYER1) {
+            return PLAYER2;
+        } else {
+            return PLAYER1;
         }
+    }
 
-        // Default false
-        return false;
+    /**
+     * Reads in user's column choice and edits to fit within board array.
+     *
+     * @return Column choice from 0 to 6
+     */
+    public int getMove() {
+        int col = 0;
+        try {
+            col = scanner.nextInt();
+            while (col < 1 || col > 7) {
+                System.out.println(INVALID_MOVE);
+                col = scanner.nextInt();
+            }
+        } catch (Exception ex) {
+            System.out.println(INVALID_MOVE);
+        }
+        return (col - 1);
     }
 
     /**
      * Checks selected column to make sure there is room
      * available for game piece to be added
+     * If column isn't full, then places piece as low as possible
      *
-     * @param col Checks player column choice
-     *            against column to make sure column is not full
-     * @return Returns true if column is full, false if not
+     * @param column Column choice from user
+     * @param player Player ID - either X or O
+     * @return True or False
      */
-    public boolean fullColumn(int col) {
-        col--;
-        for (int i = 0; i < 6; i++) {
-            if (board[i][col] == 0) {
-                return true;
+    public boolean tryMove(int column, char player) {
+        boolean flag = false;
+
+        // Is move valid - column full? within range?
+        if (board[0][column] != ' ') {
+            System.out.println("Column " + (column + 1) + " is full. " +
+                    "Please try a different one.");
+        } else {
+            // Places piece as far down chosen column as possible
+            for (int i = (board.length - 1); i >= 0; i--) {
+                if (board[i][column] == ' ') {
+                    board[i][column] = player;
+                    numMoves++;
+                    return true;
+                }
             }
         }
 
-        // Default false
-        return false;
+        return flag;
     }
 
     /**
-     * Checks that board is full in the case of a draw
+     * Checks for a winner by looking for 4-in-a-row
+     * either vertically, horizontally, or diagonally
      *
-     * @return Returns true if 42 moves have been completed.
+     * @return True or False
      */
-    public boolean fullBoard() {
-        // Check if 42 moves have been completed (draw)
-        if (numMoves == 42) {
+    public boolean checkForWinner() {
+        boolean test = false;
+
+        // Check for vertical win
+        for (int j = 0; j < board[0].length; j++) {
+            for (int i = 0; i < (board.length - 3); i++) {
+                if (board[i][j] != ' '
+                        && board[i][j] == board[i + 1][j]
+                        && board[i][j] == board[i + 2][j]
+                        && board[i][j] == board[i + 3][j]
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        // Check for horizontal win
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < (board[i].length - 3); j++) {
+                if (board[i][j] != ' '
+                        && board[i][j] == board[i][j + 1]
+                        && board[i][j] == board[i][j + 2]
+                        && board[i][j] == board[i][j + 3]) {
+                    return true;
+                }
+            }
+        }
+
+        // Check for downward diagonal (negative slope) win
+        for (int i = 0; i < (board.length - 3); i++) {
+            for (int j = 0; j < (board[i].length - 3); j++) {
+                if (board[i][j] != ' '
+                        && board[i][j] == board[i + 1][j + 1]
+                        && board[i][j] == board[i + 2][j + 2]
+                        && board[i][j] == board[i + 3][j + 3]) {
+                    return true;
+                }
+            }
+        }
+
+        // Check for upward diagonal (positive slope) win
+        for (int i = 0; i < (board.length - 3); i++) {
+            for (int j = 3; j < board[i].length; j++) {
+                if (board[i][j] != ' '
+                        && board[i][j] == board[i + 1][j - 1]
+                        && board[i][j] == board[i + 2][j - 2]
+                        && board[i][j] == board[i + 3][j - 3]) {
+                    return true;
+                }
+            }
+        }
+
+        return test;
+    }
+
+    /**
+     * Check whether all moves have been exhausted
+     * Prints out tied game message
+     *
+     * @return True or False
+     */
+    public boolean checkForDraw() {
+        if (numMoves == 41) {
             return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * This method displays an error message
+     * if the player selects an invalid game mode
+     *
+     * @return Error message
+     */
+    public void wrongMode() {
+        System.out.println(GAME_MODE_INVALID);
     }
 }

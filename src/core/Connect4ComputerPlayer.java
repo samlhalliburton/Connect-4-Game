@@ -20,4 +20,10 @@ public class Connect4ComputerPlayer {
         int computerMove = random.nextInt(7);
         return computerMove;
     }
+
+//    public int getMove(char[][] board){
+//        int move = ThreadLocalRandom.current().nextInt(1, 8);
+//        return move;
+//    }
+
 }

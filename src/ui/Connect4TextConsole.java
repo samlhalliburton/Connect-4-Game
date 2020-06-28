@@ -13,6 +13,7 @@ import java.util.Scanner;
  */
 
 public class Connect4TextConsole extends Constants {
+    public static Scanner scanner = new Scanner(System.in);
 
     /**
      * This creates the runGame method to be used in the LaunchConnect4 class
@@ -22,7 +23,6 @@ public class Connect4TextConsole extends Constants {
         Scanner scanner = new Scanner(System.in);
         Connect4 game = new Connect4();
         Connect4ComputerPlayer comp = new Connect4ComputerPlayer();
-        int port = 8000;
 
         char player = PLAYER1;
         int choice = 0;

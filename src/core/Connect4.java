@@ -1,5 +1,7 @@
 package core;
 
+import ui.Connect4TextConsole;
+
 import java.util.Scanner;
 
 /**
@@ -144,18 +146,37 @@ public class Connect4 extends Constants {
      * @return Column choice from 0 to 6
      */
     public int getMove() {
+        boolean flag = false;
         int col = 0;
-        try {
-            col = scanner.nextInt();
-            while (col < 1 || col > 7) {
+
+        while (!flag) {
+            if (Connect4TextConsole.scanner.hasNextInt()) {
+                col = Connect4TextConsole.scanner.nextInt();
+                flag = true;
+            } else {
                 System.out.println(INVALID_MOVE);
-                col = scanner.nextInt();
+                Connect4TextConsole.scanner.next();
             }
-        } catch (Exception ex) {
-            System.out.println(INVALID_MOVE);
         }
+
+        while (col < 1 || col > 7) {
+            System.out.println(INVALID_MOVE);
+            col = Connect4TextConsole.scanner.nextInt();
+        }
+
         return (col - 1);
     }
+//        int col = 0;
+//        try {
+//            col = scanner.nextInt();
+//            while (col < 1 || col > 7) {
+//                System.out.println(INVALID_MOVE);
+//                col = scanner.nextInt();
+//            }
+//        } catch (Exception ex) {
+//            System.out.println(INVALID_MOVE);
+//        }
+//        return (col - 1);
 
     /**
      * Checks selected column to make sure there is room
